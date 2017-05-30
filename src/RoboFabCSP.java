@@ -17,102 +17,99 @@ class PetNotificar {
     }
 }
 
-// RoboFabCSP: Solución con peticiones aplazadas
-// Completad las líneas marcadas con "TO DO"
+// RoboFabCSP: Solución con replicación de canales
+// Completad las líneas marcadas "TO DO"
 
 public class RoboFabCSP implements RoboFab, CSProcess {
 
+
     // Un canal para notificarPeso
     Any2OneChannel chNotificar;
-    // Un canal para permisoSoltar
-    Any2OneChannel chSoltar;
+    // NUM_ROBOTS canales para permisoSoltar
+    Any2OneChannel chSoltar[];
     // Un canal para solicitarAvance
     Any2OneChannel chAvanzar;
     // Un canal para contenedorNuevo
     Any2OneChannel chNuevo;
-
-    // las peticiones de permisoSoltar se aplazan
-    class PetSoltar {
-	int robotId;
-	One2OneChannel cconf;
-
-	public PetSoltar (int robotId) {
-	    this.robotId = robotId;
-	    cconf = Channel.one2one();
-	}
-    }
     
     public RoboFabCSP() {
+
 	// Creamos los canales
     	chNotificar = Channel.any2one();
-	chSoltar = Channel.any2one();
-	chAvanzar = Channel.any2one();
-	chNuevo = Channel.any2one();
+    	chSoltar = new Any2OneChannel[Robots.NUM_ROBOTS];
+    	for (int i=0; i<Robots.NUM_ROBOTS; i++){
+    		chSoltar[i] = Channel.any2one();
+    	}
+    	chAvanzar = Channel.any2one();
+    	chNuevo = Channel.any2one();
+    }
+
+    public void permisoSoltar(int robotId) {
+    	chSoltar[robotId].out().write(null);
     }
 
     public void notificarPeso(int robotId, int peso) {
-	PetNotificar pet = new PetNotificar(robotId,peso);
-	chNotificar.out().write(pet);
-    }
-    
-    public void permisoSoltar(int robotId) {
-	PetSoltar pet = new PetSoltar(robotId);
-	chSoltar.out().write(pet);
-	pet.cconf.in().read();
+    	PetNotificar pet = new PetNotificar(robotId,peso);
+    	chNotificar.out().write(pet);
     }
 
     public void solicitarAvance() {
-	chAvanzar.out().write(null);
+    	chAvanzar.out().write(null);
     }
 
     public void contenedorNuevo() {
-	chNuevo.out().write(null);
+    	chNuevo.out().write(null);
     }
 
     public void run() {
 	// declaramos estado del recurso: peso, pendientes...
-	// TO DO
+    	int[] pendientes;
+    	int pesoContenedor;
+    	
 	// TO DO
 
 	// Inicializamos el estado del recurso
-	// TO DO
-	// TO DO
+    	pendientes = new int[Robots.NUM_ROBOTS];
+		pesoContenedor = 0;
 
-	// Estructuras para recepción alternativa
-	final AltingChannelInput[] guards = new AltingChannelInput[4];
-
-	final int NOTIFICAR = 0;
-	final int SOLTAR    = 1;
-	final int AVANZAR   = 2;
-	final int NUEVO     = 3;
-	
+	// Estructuras para recepción alternativa condicional
+	final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
+	// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
+	// notificarPeso, solicitarAvance y contenedorNuevo
+	// TO DO
+	// TO DO 
+	// TO DO
+	// final int NOTIFICAR = ... TO DO;
+	// final int AVANZAR   = ... TO DO;
+	// final int NUEVO     = ... TO DO;
+	// 
 	// guards[NOTIFICAR] = ... TO DO;
-	// guards[SOLTAR]    = ... TO DO;
 	// guards[AVANZAR]   = ... TO DO;
 	// guards[NUEVO]     = ... TO DO;
 
+	// array de booleanos para sincronización por condición
+	boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
+	// inicializamos las condiciones de activación de los canales
+	// TO DO
+	// TO DO 
+	// TO DO
+	// TO DO
+	// TO DO
+	// TO DO
+	// TO DO
+	// TO DO
+	// TO DO
+
 	final Alternative services = new Alternative(guards);
 
-	// el vector de recepción condicional solo regula
-	// dinámicamente el canal de solicitarAvance
-	boolean enabled[] = new boolean[4];
-
-	// notificarPeso
-	enabled[NOTIFICAR] = ... ;
-	// dejamos abierto el canal de soltar
-	enabled[SOLTAR]    = true;
-	// inicialmente, solicitarAvance...
-	enabled[AVANZAR]   = ... ;
-	// contenedorNuevo
-	enabled[NUEVO]     = ... ;
-
-	// para las peticiones aplazadas de permisoSoltar:
-	final One2OneChannel[] confirmacion = new One2OneChannel[Robots.NUM_ROBOTS];
-
-	// bucle de servicio
 	while (true) {
-	    // recalculamos la sincronización por condición
-	    // de solicitarAvance:
+	    // refrescamos el vector enabled:
+	    // TO DO
+	    // TO DO
+            // TO DO
+	    // TO DO
+            // TO DO
+	    // TO DO
 	    // TO DO
 	    // TO DO
 	    // TO DO
@@ -121,35 +118,20 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 	    // la SELECT:
 	    int i = services.fairSelect(enabled);
 	    if (i == NOTIFICAR) {
-		// TO DO 
 		// TO DO
 		// TO DO
 		// TO DO
-	    } else if (i == SOLTAR) {
-		// TO DO
-		// TO DO
-		// TO DO 
-		// guardamos la petición
 		// TO DO
 	    } else if (i == AVANZAR) {
 		// TO DO
 	    } else if (i == NUEVO) {
 		// TO DO
    		// TO DO
-	    }
-	    // tratamiento de peticiones aplazadas
-	    for (i = 0; i < Robots.NUM_ROBOTS; i++) {
+	    } else if (...) { // permisoSoltar
 		// TO DO
 		// TO DO
 		// TO DO
-		// TO DO
-		// TO DO
-		// TO DO
-		// TO DO
-		// TO DO 
-		// TO DO
-	    }
-	    // Aquí ya no quedan peticiones pendientes de tratar
+	    } 
 	}
     }	
 }
