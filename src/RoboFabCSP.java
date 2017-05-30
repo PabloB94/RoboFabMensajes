@@ -12,8 +12,8 @@ class PetNotificar {
     int peso;
     
     public PetNotificar(int robotId, int peso) {
-	this.robotId = robotId;
-	this.peso = peso;
+    	this.robotId = robotId;
+    	this.peso = peso;
     }
 }
 
@@ -62,79 +62,81 @@ public class RoboFabCSP implements RoboFab, CSProcess {
     }
 
     public void run() {
-	// declaramos estado del recurso: peso, pendientes...
+    	// declaramos estado del recurso: peso, pendientes...
     	int[] pendientes;
     	int pesoContenedor;
     	
-	// TO DO
+    	// TO DO
 
-	// Inicializamos el estado del recurso
+    	// Inicializamos el estado del recurso
     	pendientes = new int[Robots.NUM_ROBOTS];
 		pesoContenedor = 0;
 
-	// Estructuras para recepci√≥n alternativa condicional
-	final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
-	// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
-	// notificarPeso, solicitarAvance y contenedorNuevo
+		// Estructuras para recepci√≥n alternativa condicional
+		final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
+		// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
+		// notificarPeso, solicitarAvance y contenedorNuevo
 		for (int k = 0; k < Robots.NUM_ROBOTS;k++){
 			guards[k] = chSoltar[k].in();
 		}
 		final int NOTIFICAR = Robots.NUM_ROBOTS;
 		final int AVANZAR   = Robots.NUM_ROBOTS + 1;
 		final int NUEVO     = Robots.NUM_ROBOTS + 2;
-	// 
+		// 
 		guards[NOTIFICAR] = chNotificar.in();
 		guards[AVANZAR]   = chAvanzar.in();
 		guards[NUEVO]     = chNuevo.in();
 
-	// array de booleanos para sincronizaci√≥n por condici√≥n
+		// array de booleanos para sincronizaci√≥n por condici√≥n
 		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
-	// inicializamos las condiciones de activaci√≥n de los canales
-		for(int k = 0; k < Robots.NUM_ROBOTS; k++){
-			enabled[k] = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+	
+		// Las condiciones de activaciÛn de los canales
+		
+	
+
+		final Alternative services = new Alternative(guards);
+		boolean control = false;
+		boolean avanzando = false;
+
+		while (true) {
+			PetNotificar notificacion;
+			// refrescamos el vector enabled:
+			for(int k = 0; k < Robots.NUM_ROBOTS; k++){
+				enabled[k] = (pendientes[k] != 0 && pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR && !avanzando);
+				control = enabled[k] || control;
+			}
+		
+			//La precondicion de notificar es true, asÌ que siempre se permite a un robot
+			//notificar el peso que ha recogido
+			enabled[NOTIFICAR] = true;
+		
+			//La variable control comprueba si alguno de los robots puede descargar a˙n con seguridad
+			//En caso afirmativo, no se da permiso para avanzar la cinta.
+			enabled[AVANZAR] = !control;
+		
+			//La precondicion de nuevoContenedor es true, asÌ que siempre que se haya dado permiso
+			//para avanzar, se tendr· permiso para notificar el contenedor nuevo
+			enabled[NUEVO] = enabled[AVANZAR];
+	    
+
+			// la SELECT:
+			int i = services.fairSelect(enabled);
+			if (i == NOTIFICAR) {
+				notificacion = (PetNotificar) guards[NOTIFICAR].read();
+				pendientes[notificacion.robotId] = notificacion.peso;
+				// TO DO
+				// TO DO
+			} else if (i == AVANZAR) {
+				avanzando = true;
+			} else if (i == NUEVO) {
+				pesoContenedor = 0;
+				avanzando = false;
+			} else if (i >=0 && i < Robots.NUM_ROBOTS) { // permisoSoltar
+				guards[i].read();
+				pesoContenedor = pesoContenedor + pendientes[i];
+				pendientes[i] = 0;
+			} 
 		}
-	// TO DO 
-	// TO DO
-	// TO DO
-	// TO DO
-	// TO DO
-	// TO DO
-	// TO DO
-	// TO DO
-
-	final Alternative services = new Alternative(guards);
-
-	while (true) {
-	    // refrescamos el vector enabled:
-	    // TO DO
-	    // TO DO
-            // TO DO
-	    // TO DO
-            // TO DO
-	    // TO DO
-	    // TO DO
-	    // TO DO
-	    // TO DO
-	    // TO DO
-
-	    // la SELECT:
-	    int i = services.fairSelect(enabled);
-	    if (i == NOTIFICAR) {
-		// TO DO
-		// TO DO
-		// TO DO
-		// TO DO
-	    } else if (i == AVANZAR) {
-		// TO DO
-	    } else if (i == NUEVO) {
-		// TO DO
-   		// TO DO
-	    } else if (/*rellenar esta condicion, el true me lo he inventado*/true) { // permisoSoltar
-		// TO DO
-		// TO DO
-		// TO DO
-	    } 
-	}
     }	
 }
 
