@@ -76,21 +76,23 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 	final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
 	// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
 	// notificarPeso, solicitarAvance y contenedorNuevo
-	// TO DO
-	// TO DO 
-	// TO DO
-	// final int NOTIFICAR = ... TO DO;
-	// final int AVANZAR   = ... TO DO;
-	// final int NUEVO     = ... TO DO;
+		for (int k = 0; k < Robots.NUM_ROBOTS;k++){
+			guards[k] = chSoltar[k].in();
+		}
+		final int NOTIFICAR = Robots.NUM_ROBOTS;
+		final int AVANZAR   = Robots.NUM_ROBOTS + 1;
+		final int NUEVO     = Robots.NUM_ROBOTS + 2;
 	// 
-	// guards[NOTIFICAR] = ... TO DO;
-	// guards[AVANZAR]   = ... TO DO;
-	// guards[NUEVO]     = ... TO DO;
+		guards[NOTIFICAR] = chNotificar.in();
+		guards[AVANZAR]   = chAvanzar.in();
+		guards[NUEVO]     = chNuevo.in();
 
 	// array de booleanos para sincronización por condición
-	boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
+		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
 	// inicializamos las condiciones de activación de los canales
-	// TO DO
+		for(int k = 0; k < Robots.NUM_ROBOTS; k++){
+			enabled[k] = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+		}
 	// TO DO 
 	// TO DO
 	// TO DO
@@ -127,7 +129,7 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 	    } else if (i == NUEVO) {
 		// TO DO
    		// TO DO
-	    } else if (...) { // permisoSoltar
+	    } else if (/*rellenar esta condicion, el true me lo he inventado*/true) { // permisoSoltar
 		// TO DO
 		// TO DO
 		// TO DO
