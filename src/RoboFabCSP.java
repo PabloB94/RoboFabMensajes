@@ -1,3 +1,6 @@
+//Escrito por Pablo Beltrán y Eduardo Freyre
+//31 de Mayo de 2017
+
 import org.jcsp.lang.Alternative;
 import org.jcsp.lang.AltingChannelInput;
 import org.jcsp.lang.Any2OneChannel;
