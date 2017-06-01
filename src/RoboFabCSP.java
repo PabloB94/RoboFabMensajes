@@ -1,4 +1,4 @@
-//Escrito por Pablo Beltr�n y Eduardo Freyre
+//Escrito por Pablo Beltrán y Eduardo Freyre
 //31 de Mayo de 2017
 
 import org.jcsp.lang.Alternative;
@@ -20,8 +20,8 @@ class PetNotificar {
     }
 }
 
-// RoboFabCSP: Solución con replicación de canales
-// Completad las líneas marcadas "TO DO"
+// RoboFabCSP: SoluciÃ³n con replicaciÃ³n de canales
+// Completad las lÃ­neas marcadas "TO DO"
 
 public class RoboFabCSP implements RoboFab, CSProcess {
 
@@ -74,8 +74,10 @@ public class RoboFabCSP implements RoboFab, CSProcess {
     	// Inicializamos el estado del recurso
     	pendientes = new int[Robots.NUM_ROBOTS];
 		pesoContenedor = 0;
-
-		// Estructuras para recepción alternativa condicional
+		for(int iv=0;iv<pendientes[].length();iv++){
+			pendientes[i]=0;
+		}
+		// Estructuras para recepciÃ³n alternativa condicional
 		final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
 		// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
 		// notificarPeso, solicitarAvance y contenedorNuevo
@@ -90,39 +92,44 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 		guards[AVANZAR]   = chAvanzar.in();
 		guards[NUEVO]     = chNuevo.in();
 
-		// array de booleanos para sincronización por condición
+		// array de booleanos para sincronizaciÃ³n por condiciÃ³n
 		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
 	
-		// Las condiciones de activaci�n de los canales
+		// Las condiciones de activación de los canales
 		
 	
 
 		final Alternative services = new Alternative(guards);
 		boolean control;
 		boolean avanzando = false;
-		boolean[] notificado = new boolean[Robots.NUM_ROBOTS];
-
-		while (true) {
-			control = false;
+		//boolean[] notificado = new boolean[Robots.NUM_ROBOTS];
+		
+		//La precondicion de nuevoContenedor es true, así que siempre que se haya dado permiso
+		//para avanzar, se tendrá permiso para notificar el contenedor nuevo
+	    enabled[NUEVO] = true;
+		//La precondicion de notificar es true, así que siempre se permite a un robot
+		//notificar el peso que ha recogido
+	    enabled[NOTIFICAR] = true;
+	    
+	    while (true) {
+			control = true;
 			PetNotificar notificacion;
 			// refrescamos el vector enabled:
-			for(int k = 0; k < Robots.NUM_ROBOTS; k++){
-				boolean pesoSeguro = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
-				enabled[k] = (notificado[k] && pesoSeguro && !avanzando);
-				control = enabled[k] || control || pesoSeguro;
+			for(int k = 0; k < Robots.NUM_ROBOTS; k++){ 
+				boolean pesoSeguro = (  pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR );
+				enabled[k] = (/*notificado[k]*/pendientes[k]!=0 && pesoSeguro/* && pendientes[k]!=0 && !avanzando*/ );
+				if(control){
+				control = pendientes[k]!=0 && !pesoSeguro /*!control && enabled[k] || control || pesoSeguro*/;
+				}
 			}
 		
-			//La precondicion de notificar es true, as� que siempre se permite a un robot
-			//notificar el peso que ha recogido
-			enabled[NOTIFICAR] = true;
+			
 		
-			//La variable control comprueba si alguno de los robots puede descargar a�n con seguridad
+			//La variable control comprueba si alguno de los robots puede descargar aún con seguridad
 			//En caso afirmativo, no se da permiso para avanzar la cinta.
 			enabled[AVANZAR] = !control;
 		
-			//La precondicion de nuevoContenedor es true, as� que siempre que se haya dado permiso
-			//para avanzar, se tendr� permiso para notificar el contenedor nuevo
-			enabled[NUEVO] = avanzando;
+			
 	    
 
 			// la SELECT:
@@ -130,20 +137,20 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 			if (i == NOTIFICAR) {
 				notificacion = (PetNotificar) guards[NOTIFICAR].read();
 				pendientes[notificacion.robotId] = notificacion.peso;
-				notificado[notificacion.robotId] = true;
+				//notificado[notificacion.robotId] = true;
 				// TO DO
 			} else if (i == AVANZAR) {
 				guards[AVANZAR].read();
-				avanzando = true;
+				//avanzando = true;
 			} else if (i == NUEVO) {
 				guards[NUEVO].read();
 				pesoContenedor = 0;
-				avanzando = false;
+				//avanzando = false;
 			} else if (i >=0 && i < Robots.NUM_ROBOTS) { // permisoSoltar
 				guards[i].read();
 				pesoContenedor = pesoContenedor + pendientes[i];
 				pendientes[i] = 0;
-				notificado[i] = false;
+			//	notificado[i] = false;
 			} 
 		}
     }	
