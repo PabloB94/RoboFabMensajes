@@ -100,16 +100,16 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 		final Alternative services = new Alternative(guards);
 		boolean control;
 		boolean avanzando = false;
-		boolean[] notificado = new boolean[Robots.NUM_ROBOTS];
+		
 
 		while (true) {
 			control = false;
 			PetNotificar notificacion;
 			// refrescamos el vector enabled:
 			for(int k = 0; k < Robots.NUM_ROBOTS; k++){
-				boolean pesoSeguro = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
-				enabled[k] = (notificado[k] && pesoSeguro && !avanzando);
-				control = enabled[k] || control || pesoSeguro;
+				//boolean pesoSeguro = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+				enabled[k] = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+				control = enabled[k] || control;
 			}
 		
 			//La precondicion de notificar es true, asi que siempre se permite a un robot
@@ -130,8 +130,7 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 			if (i == NOTIFICAR) {
 				notificacion = (PetNotificar) guards[NOTIFICAR].read();
 				pendientes[notificacion.robotId] = notificacion.peso;
-				notificado[notificacion.robotId] = true;
-				// TO DO
+				
 			} else if (i == AVANZAR) {
 				guards[AVANZAR].read();
 				avanzando = true;
@@ -143,7 +142,6 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 				guards[i].read();
 				pesoContenedor = pesoContenedor + pendientes[i];
 				pendientes[i] = 0;
-				notificado[i] = false;
 			} 
 		}
     }	
