@@ -65,50 +65,53 @@ public class RoboFabCSP implements RoboFab, CSProcess {
     }
 
     public void run() {
-    	// declaramos estado del recurso: peso, pendientes...
+    	// Declaramos estado del recurso: pesoContenedor y el array de pesos pendientes
     	int[] pendientes;
     	int pesoContenedor;
     	
-    	// TO DO
-
     	// Inicializamos el estado del recurso
     	pendientes = new int[Robots.NUM_ROBOTS];
 		pesoContenedor = 0;
 
-		// Estructuras para recepción alternativa condicional
+		// Estructuras para recepcion alternativa condicional
 		final AltingChannelInput[] guards = new AltingChannelInput[Robots.NUM_ROBOTS+3];
-		// reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
+		// Reservamos NUM_ROBOTS entradas para permisoSoltar y una entrada cada una de
 		// notificarPeso, solicitarAvance y contenedorNuevo
+		//Este bucle reserva las entradas de permisoSoltar
 		for (int k = 0; k < Robots.NUM_ROBOTS;k++){
 			guards[k] = chSoltar[k].in();
 		}
+		//Para no utilizar numeros magicos que creen confusion al 
+		//leer el codigo, los canales para notificar, avanzar e 
+		//indicar un contenedor nuevo se llamaran con unas constantes
+		//que se declaran aqui
 		final int NOTIFICAR = Robots.NUM_ROBOTS;
 		final int AVANZAR   = Robots.NUM_ROBOTS + 1;
 		final int NUEVO     = Robots.NUM_ROBOTS + 2;
-		// 
+		// Asignamos el resto de las entradas
 		guards[NOTIFICAR] = chNotificar.in();
 		guards[AVANZAR]   = chAvanzar.in();
 		guards[NUEVO]     = chNuevo.in();
 
-		// array de booleanos para sincronización por condición
-		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
-	
-		// Las condiciones de activacion de los canales
-		
-	
+		//Array de booleanos para sincronizacion por condicion
+		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];	
 
 		final Alternative services = new Alternative(guards);
 		boolean control;
-		boolean avanzando = false;
 		
-
+		//A partir de aqui comienza el bucle principal del programa
+		//que se encargara de asignar los turnos de acceso al recurso
 		while (true) {
+			//Declaramos e inicializamos las variables auxiliares necesarias
 			control = false;
 			PetNotificar notificacion;
-			// refrescamos el vector enabled:
+			//Refrescamos el vector enabled:
 			for(int k = 0; k < Robots.NUM_ROBOTS; k++){
-				//boolean pesoSeguro = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+				//Las posiciones de soltar se abren cuando el robot carga un peso que 
+				//se puede descargar sin problemas en el contenedor
 				enabled[k] = (pesoContenedor + pendientes[k] <= Cinta.MAX_P_CONTENEDOR);
+				//Cuando algun robot puede descargar, la variable control se pone a true,
+				//lo que indica que la cinta no debe avanzar aun
 				control = enabled[k] || control;
 			}
 		
@@ -116,29 +119,48 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 			//notificar el peso que ha recogido
 			enabled[NOTIFICAR] = true;
 		
-			//La variable control comprueba si alguno de los robots puede descargar aun con seguridad
-			//En caso afirmativo, no se da permiso para avanzar la cinta.
+			//Se permite avanzar a la cinta cuando no hay robots que puedan descargar 
 			enabled[AVANZAR] = !control;
 		
-			//La precondicion de nuevoContenedor es true, asi que siempre que se haya dado permiso
-			//para avanzar, se tendra permiso para notificar el contenedor nuevo
-			enabled[NUEVO] = avanzando;
+			//La precondicion de nuevoContenedor es true, y por tanto no se hace ninguna
+			//comprobacion previa, ya que el programa ejecutara las llamadas en orden
+			//y no dara paso al metodo antes de tiempo
+			enabled[NUEVO] = true;
 	    
 
-			// la SELECT:
+			//Nosotros habriamos implementado un switch aqui si no hubiesemos
+			//tenido el esqueleto, pero hemos preferido no tocar la estructura
+			//que se nos habia dado
+			//El fairSelect devuelve el indice de una de las posiciones del vector
+			//enabled siempre y cuando haya un mensaje esperando para ser enviado 
+			//por ese canal
 			int i = services.fairSelect(enabled);
 			if (i == NOTIFICAR) {
+				//Se escucha por el canal y se hace un casting para convertir
+				//en la clase PetNotificar el Object que entra por el canal
+				//de forma que podamos acceder a los metodos de la clase
 				notificacion = (PetNotificar) guards[NOTIFICAR].read();
-				pendientes[notificacion.robotId] = notificacion.peso;
-				
+				//Se actualiza el array pendientes con el peso indicado
+				//por el robot en la posicion que le corresponde
+				pendientes[notificacion.robotId] = notificacion.peso;				
 			} else if (i == AVANZAR) {
+				//El metodo avanzar no tiene que hacer nada, simplemente dar
+				//paso, por lo tanto se escucha por el canal sin guardar lo 
+				//que entra (que no es mas que un Object null) de forma que el
+				//proceso que hace el envio quede desbloqueado y pueda continuar
 				guards[AVANZAR].read();
-				avanzando = true;
 			} else if (i == NUEVO) {
+				//Igual que en el metodo anterior, el proceso que hace el envio
+				//no manda nada, por lo que se escucha para desbloquearlo y luego
+				//se actualiza el estado del recurso, que es la postcondicion 
+				//de este metodo
 				guards[NUEVO].read();
 				pesoContenedor = 0;
-				avanzando = false;
 			} else if (i >=0 && i < Robots.NUM_ROBOTS) { // permisoSoltar
+				//Las posiciones de 0 a NUM_ROBOTS son peticiones de soltar de
+				//cada robot, por lo que se tratan individualmente. Se escucha para
+				//desbloquear el robot en cuestion y se procede a actualizar el 
+				//estado del recurso con los valores ya guardados anteriormente 
 				guards[i].read();
 				pesoContenedor = pesoContenedor + pendientes[i];
 				pendientes[i] = 0;
