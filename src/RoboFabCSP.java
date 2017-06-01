@@ -1,4 +1,4 @@
-//Escrito por Pablo Beltrán y Eduardo Freyre
+//Escrito por Pablo Beltran y Eduardo Freyre
 //31 de Mayo de 2017
 
 import org.jcsp.lang.Alternative;
@@ -93,7 +93,7 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 		// array de booleanos para sincronizaciÃ³n por condiciÃ³n
 		boolean enabled[] = new boolean[Robots.NUM_ROBOTS+3];
 	
-		// Las condiciones de activación de los canales
+		// Las condiciones de activacion de los canales
 		
 	
 
@@ -112,16 +112,16 @@ public class RoboFabCSP implements RoboFab, CSProcess {
 				control = enabled[k] || control || pesoSeguro;
 			}
 		
-			//La precondicion de notificar es true, así que siempre se permite a un robot
+			//La precondicion de notificar es true, asi que siempre se permite a un robot
 			//notificar el peso que ha recogido
 			enabled[NOTIFICAR] = true;
 		
-			//La variable control comprueba si alguno de los robots puede descargar aún con seguridad
+			//La variable control comprueba si alguno de los robots puede descargar aun con seguridad
 			//En caso afirmativo, no se da permiso para avanzar la cinta.
 			enabled[AVANZAR] = !control;
 		
-			//La precondicion de nuevoContenedor es true, así que siempre que se haya dado permiso
-			//para avanzar, se tendrá permiso para notificar el contenedor nuevo
+			//La precondicion de nuevoContenedor es true, asi que siempre que se haya dado permiso
+			//para avanzar, se tendra permiso para notificar el contenedor nuevo
 			enabled[NUEVO] = avanzando;
 	    
 
