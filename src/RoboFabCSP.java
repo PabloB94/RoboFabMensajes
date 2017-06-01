@@ -74,7 +74,7 @@ public class RoboFabCSP implements RoboFab, CSProcess {
     	// Inicializamos el estado del recurso
     	pendientes = new int[Robots.NUM_ROBOTS];
 		pesoContenedor = 0;
-		for(int iv=0;iv<pendientes[].length();iv++){
+		for(int iv=0;iv<pendientes[].length;iv++){
 			pendientes[i]=0;
 		}
 		// Estructuras para recepciÃ³n alternativa condicional
